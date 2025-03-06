@@ -71,7 +71,7 @@ jobs:
         ./kernel_platform/oplus/build/oplus_build_kernel.sh waipio gki
 
     - name: Upload Image
-       uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v4
        with:
          name: 11R-KSUN-${{ env.KSUVER }}
          path: kernel_workspace/kernel_platform/out/msm-waipio-waipio-gki/dist/Image
