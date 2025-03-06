@@ -43,8 +43,6 @@ jobs:
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
          sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
-         sed -i '$s|echo "\$res"|echo "$res-Mortis"|' kernel_platform/common/scripts/setlocalversion            
-         sed -i '$s|echo "\$res"|echo "$res-Mortis"|' kernel_platform/msm-kernel/scripts/setlocalversion
                   
       - name: Set up KernelSU Next
         run: |
@@ -61,7 +59,7 @@ jobs:
            git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android12-5.10
            git clone https://github.com/yuhe989/kernel_patches.git
            cd kernel_platform
-           cp ../kernel_patches/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./KernelSU-Next/
+           cp ..next/0001-kernel-patch-susfs-v1.5.5-to-KernelSU-Next-v1.0.5.patch ./KernelSU-Next/
            cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android12-5.10.patch ./common/
            cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
            cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
