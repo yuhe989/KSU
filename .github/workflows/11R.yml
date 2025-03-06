@@ -142,5 +142,5 @@ jobs:
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
-          name: OP11R_MKSU_Image_${{ env.KSUVER }}
+          name: 11R-MKSU-${{ env.KSUVER }}
           path: kernel_workspace/kernel_platform/out/msm-waipio-waipio-gki/dist/Image
