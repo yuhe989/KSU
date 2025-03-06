@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Maximize build space
+    - name: Maximize Build Space
       uses: easimon/maximize-build-space@master
       with:
         root-reserve-mb: 8192
@@ -19,55 +19,55 @@ jobs:
 
     - name: Configure Git
       run: |
-         git config --global user.name "Yxiguan"
-         git config --global user.email "2501608779@qq.com"
-    
-    - name: 安装repo
+        git config --global user.name "Yxiguan"
+        git config --global user.email "2501608779@qq.com"
+
+    - name: Install Repo
       run: |
         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
         chmod a+x ~/repo
         sudo mv ~/repo /usr/local/bin/repo
-    
-    - name: 安装编译环境
+
+    - name: Install Build Dependencies
       run: |
         sudo apt update && sudo apt upgrade -y
         sudo apt install curl git python3 zip python3-pip -y
         pip3 install requests_toolbelt requests
 
-    - name: 拉取oneplus 11r内核清单
+    - name: Fetch OnePlus 11R Kernel Source
       run: |
         mkdir kernel && cd kernel
         repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b oneplus/sm8475 -m oneplus_11r_v.xml --depth=1
         repo sync -j$(nproc --all) --no-clone-bundle --no-tags
         sed -i 's/export REPACK_IMG=true/export REPACK_IMG=false/Ig' kernel_platform/oplus/build/oplus_setup.sh
-         sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
-        
-    - name: 添加KernelSU Next
+        sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+
+    - name: Add KernelSU Next
       run: |
         cd kernel/kernel_platform/common
         curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next-susfs
-        
-    - name: 添加SUSFS
+
+    - name: Add SUSFS
       run: |
-           cd kernel
-           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android12-5.10
-           # git clone https://github.com/TheWildJames/kernel_patches.git
-           cd kernel_platform
-           cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./common/KernelSU-Next/
-           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android12-5.10.patch ./common/
-           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
-           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-           cd common
-           patch -p1 < 50_add_susfs_in_gki-android12-5.10.patch
-           
-    - name: 编译内核
+        cd kernel
+        git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android12-5.10
+        # git clone https://github.com/TheWildJames/kernel_patches.git
+        cd kernel_platform
+        cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./common/KernelSU-Next/
+        cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android12-5.10.patch ./common/
+        cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
+        cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+        cd common
+        patch -p1 < 50_add_susfs_in_gki-android12-5.10.patch
+
+    - name: Build Kernel
       run: |
         cd kernel
         export LTO=thin
         ./kernel_platform/oplus/build/oplus_build_kernel.sh waipio gki
 
-    - name: Upload Image
+    - name: Upload Kernel Image
       uses: actions/upload-artifact@v4
-       with:
-         name: 11R-KSUN-${{ env.KSUVER }}
-         path: kernel_workspace/kernel_platform/out/msm-waipio-waipio-gki/dist/Image
+      with:
+        name: 11R-KSUN-${{ env.KSUVER }}
+        path: kernel_workspace/kernel_platform/out/msm-waipio-waipio-gki/dist/Image
