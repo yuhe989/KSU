@@ -39,7 +39,13 @@ jobs:
           repo sync -j$(nproc --all)
           find kernel_platform/msm-kernel/android/ -name "abi_gki_protected_exports_*" -delete
           sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
-          sed -i 's/-g$(echo "$res" | sed "s/^.*-g//")//' kernel_platform/msm-kernel/scripts/setlocalversion
+          # 去除 -gxxxxxx
+          res=$(git -C kernel_platform/msm-kernel rev-parse --short HEAD) 
+          # 获取 Git 提交 ID
+           if [[ "$res" == *-g* ]]; then
+             replacement=$(echo "$res" | sed 's/^.*-g//')
+             sed -i "s/-g$replacement//" kernel_platform/msm-kernel/scripts/setlocalversion
+           fi
     
       - name: Set up MKSU
         run: |
@@ -102,7 +108,7 @@ jobs:
           sed -i 's/^#\? CONFIG_KSU_SUSFS_OPEN_REDIRECT .*/CONFIG_KSU_SUSFS_OPEN_REDIRECT=y/' ./common/arch/arm64/configs/gki_defconfig
           sed -i 's/^#\? CONFIG_KSU_SUSFS_SUS_SU .*/CONFIG_KSU_SUSFS_SUS_SU=n/' ./common/arch/arm64/configs/gki_defconfig
           sed -i '2s/check_defconfig//' ./common/build.config.gki
-          # Apply New Hook Patch
+           # Apply New Hook Patch
            cd ./common
            patch -p1 -F 3 < new_hooks.patch
        
