@@ -1,4 +1,4 @@
-name: MKSU-SKN
+name: MKSU-SKN-zero
 on:
   workflow_dispatch:
 
@@ -38,6 +38,8 @@ jobs:
           mkdir kernel_workspace && cd kernel_workspace
           repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/sm8475 -m oneplus_11r_v.xml --depth=1
           repo sync -j$(nproc --all) --no-clone-bundle --no-tags
+          find kernel_platform/msm-kernel/android/ -name "abi_gki_protected_exports_*" -delete
+          find kernel_platform/common/android/ -name "abi_gki_protected_exports_*" -delete
 
       - name: Set up MKSU
         run: |
