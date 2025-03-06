@@ -83,13 +83,29 @@ jobs:
       - name: Apply new hook and add configuration
         run: |
           cd kernel_workspace/kernel_platform
-          echo "CONFIG_KSU=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_KSU_SUSFS=y" >> ./common/arch/arm64/configs/gki_defconfig
-          echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU .*/CONFIG_KSU=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_WITH_KPROBES .*/CONFIG_KSU_WITH_KPROBES=n/' ./common/arch/arm64/           configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS .*/CONFIG_KSU_SUSFS=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT .*/CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SUS_PATH .*/CONFIG_KSU_SUSFS_SUS_PATH=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SUS_MOUNT .*/CONFIG_KSU_SUSFS_SUS_MOUNT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT .*/CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT .*/CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SUS_KSTAT .*/CONFIG_KSU_SUSFS_SUS_KSTAT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SUS_OVERLAYFS .*/CONFIG_KSU_SUSFS_SUS_OVERLAYFS=n/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_TRY_UMOUNT .*/CONFIG_KSU_SUSFS_TRY_UMOUNT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT .*/CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SPOOF_UNAME .*/CONFIG_KSU_SUSFS_SPOOF_UNAME=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_ENABLE_LOG .*/CONFIG_KSU_SUSFS_ENABLE_LOG=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS .*/CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG .*/CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_OPEN_REDIRECT .*/CONFIG_KSU_SUSFS_OPEN_REDIRECT=y/' ./common/arch/arm64/configs/gki_defconfig
+          sed -i 's/^#\? CONFIG_KSU_SUSFS_SUS_SU .*/CONFIG_KSU_SUSFS_SUS_SU=n/' ./common/arch/arm64/configs/gki_defconfig
           sed -i '2s/check_defconfig//' ./common/build.config.gki
-          cd ./common
-          patch -p1 -F 3 < new_hooks.patch
-         
+          # Apply New Hook Patch
+           cd ./common
+           patch -p1 -F 3 < new_hooks.patch
+       
       - name: Build kernel
         run: |
           cd kernel_workspace
