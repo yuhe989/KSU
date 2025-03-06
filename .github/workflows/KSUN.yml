@@ -1,8 +1,9 @@
 name: KSUN
 on:
   workflow_dispatch:
-jobs:
- build:
+
+ jobs:
+   build:
     
     runs-on: ubuntu-latest
 
