@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir kernel_workspace && cd kernel_workspace
           repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/sm8475 -m oneplus_11r_v.xml --depth=1
-          repo sync -j$(nproc --all)
+          repo sync -j$(nproc --all) --no-clone-bundle --no-tags
           find kernel_platform/msm-kernel/android/ -name "abi_gki_protected_exports_*" -delete
           sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
           # 去除 -gxxxxxx
