@@ -1,0 +1,100 @@
+name: MKSU
+on:
+  workflow_dispatch: 
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 8192
+          temp-reserve-mb: 2048
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          
+      - name: Configure Git
+        run: |
+         git config --global user.name "build"
+         git config --global user.email "3436378798@qq.com"
+
+      - name: Install dependencies
+        run: |
+         sudo apt update && sudo apt upgrade -y
+         sudo apt install -y python3 git
+
+      - name: Install repo tool
+        run: |
+         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/repo
+         chmod a+x ~/repo
+         sudo mv ~/repo /usr/local/bin/repo
+
+      - name: Initialize repo 和 sync
+        run: |
+         mkdir kernel_workspace && cd kernel_workspace
+         repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/sm8475 -m oneplus_11r_v.xml --depth=1
+         repo sync         
+         find kernel_platform/common/android/ -name "abi_gki_protected_exports_*" -delete
+         find kernel_platform/msm-kernel/android/ -name "abi_gki_protected_exports_*" -delete
+         sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
+         sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+         sed -i '$s|echo "\$res"|echo "$res-Mortis"|' kernel_platform/common/scripts/setlocalversion            
+         sed -i '$s|echo "\$res"|echo "$res-Mortis"|' kernel_platform/msm-kernel/scripts/setlocalversion            
+
+      - name: Set up MKSU
+        run: |
+         cd kernel_workspace/kernel_platform
+         curl -LSs "https://raw.githubusercontent.com/ShirkNeko/KernelSU/susfs/kernel/setup.sh" | bash -s susfs
+         cd KernelSU
+         KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10200)
+         echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
+         sed -i "s/DKSU_VERSION=16/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
+        
+      - name: Set up susfs
+        run: |
+           cd kernel_workspace           
+           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android12-5.10
+           git clone https://github.com/WildPlusKernel/kernel_patches.git
+           cd kernel_platform
+           cp ../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./KernelSU/
+           cp ../kernel_patches/mksu_susfs.patch ./KernelSU/
+           cp ../kernel_patches/fix.patch ./KernelSU/
+           cp ../kernel_patches/new_hooks.patch ./common
+           cp ../kernel_patches/69_hide_stuff.patch ./common
+           cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-android12-5.10.patch ./common/
+           cp ../susfs4ksu/kernel_patches/fs/* ./common/fs/
+           cp ../susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+
+           # Apply patches
+           cd ./KernelSU
+           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+           cd ../common
+           patch -p1 < 50_add_susfs_in_gki-android12-5.10.patch || true
+           cd ../KernelSU
+           patch -p1 --forward < mksu_susfs_fix.patch || true
+           git add -A && git commit -a -m "BUILD Kernel"
+           cd ..
+           cd ./msm-kernel && git add -A && git commit -a -m "BUILD Kernel"
+           cd ..
+         
+      - name: Build kernel
+        run: |
+         cd kernel_workspace
+         export LTO=thin
+         ./kernel_platform/oplus/build/oplus_build_kernel.sh waipio gki
+         
+      - name: Make AnyKernel3
+        run: |
+         git clone https://github.com/TanakaLun/AnyKernel3 --depth=1
+         rm -rf ./AnyKernel3/.git
+         cp kernel_workspace/kernel_platform/out/msm-waipio-waipio-gki/dist/Image ./AnyKernel3/
+
+          
+      - name: Upload AnyKernel3
+        uses: actions/upload-artifact@v4
+        with:
+         name: OP11R_MKSU_${{ env.KSUVER }}
+         path: ./AnyKernel3/*
