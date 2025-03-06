@@ -39,18 +39,6 @@ jobs:
           repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/sm8475 -m oneplus_11r_v.xml --depth=1
           repo sync -j$(nproc --all) --no-clone-bundle --no-tags
 
-          KERNEL_DIR="kernel_platform"
-
-          find "$KERNEL_DIR" -type f -name "abi_gki_protected_exports_*" -delete
-
-          SETLOCALVERSION_FILE=$(find "$KERNEL_DIR" -type f -name "setlocalversion")
-          [[ -n "$SETLOCALVERSION_FILE" ]] && sed -i 's/ -dirty//g' "$SETLOCALVERSION_FILE"
-
-          GIT_HASH=$(git -C "$KERNEL_DIR" rev-parse --short HEAD 2>/dev/null)
-          if [[ $? -eq 0 && "$GIT_HASH" == *-g* ]]; then
-              sed -i "s/-g${GIT_HASH##*-g}//" "$SETLOCALVERSION_FILE"
-          fi
-
       - name: Set up MKSU
         run: |
           cd kernel_workspace/kernel_platform
@@ -73,7 +61,6 @@ jobs:
           cp ./kernel_patches/69_hide_stuff.patch ./common
           cp ./susfs4ksu/kernel_patches/fs/* common/fs/
           cp ./susfs4ksu/kernel_patches/include/linux/* common/include/linux/
-
           # Apply patches
           cd KernelSU
           patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
@@ -97,6 +84,7 @@ jobs:
 
           CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
 
+          # 修改或追加配置项的函数
           modify_or_append() {
               local key=$1
               local value=$2
@@ -107,6 +95,7 @@ jobs:
               fi
           }
 
+          # 配置 KSU 相关选项
           declare -A config_values=(
               ["CONFIG_KSU"]="y"
               ["CONFIG_KSU_WITH_KPROBES"]="n"
@@ -128,19 +117,23 @@ jobs:
               ["CONFIG_KSU_SUSFS_SUS_SU"]="n"
           )
 
+          # 遍历配置项并修改或追加
           for key in "${!config_values[@]}"; do
               modify_or_append "$key" "${config_values[$key]}"
           done
 
+          # 修改 build.config.gki 文件
           sed -i '2s/check_defconfig//' ./common/build.config.gki
 
+          # 应用新补丁
           cd ./common
           patch -p1 -F 3 < new_hooks.patch
 
       - name: Build kernel
         run: |
           cd kernel_workspace
-          LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh waipio gki
+          export LOCALVERSION=   # **强制 LOCALVERSION 为空**
+          LTO=thin LOCALVERSION= ./kernel_platform/oplus/build/oplus_build_kernel.sh waipio gki
 
       - name: Upload Image
         uses: actions/upload-artifact@v4
