@@ -46,8 +46,7 @@ jobs:
         run: |
          cd kernel_workspace/kernel_platform
          curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/refs/heads/main/kernel/setup.sh" | bash -
-         cd KernelSU       
-         #git revert -m 1 $(git log --grep="remove devpts hook" --pretty=format:"%h") -n
+         cd KernelSU
          KSU_VERSION=$(expr $(/usr/bin/git rev-list --count HEAD) "+" 10200)
          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
          sed -i "s/DKSU_VERSION=16/DKSU_VERSION=${KSU_VERSION}/" kernel/Makefile
@@ -75,7 +74,6 @@ jobs:
            patch -p1 --forward < mksu_susfs.patch || true
            patch -p1 --forward < fix.patch || true
            curl -O https://raw.githubusercontent.com/TanakaLun/Action-Kernel/refs/heads/main/vfs_fix.patch
-           #curl -O https://raw.githubusercontent.com/ShirkNeko/KernelSU/16f934f4aaa8301939d73f969a421e90b2e92c8e/mksu_susfs_vfs_fix.sh
            patch -p1 --forward < vfs_fix.patch || true
            cd ../common
            patch -p1 -F 3 < 69_hide_stuff.patch
