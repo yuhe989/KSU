@@ -40,7 +40,7 @@ jobs:
         repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b oneplus/sm8475 -m oneplus_11r_v.xml --depth=1
         repo sync -j$(nproc --all) --no-clone-bundle --no-tags
         sed -i 's/export REPACK_IMG=true/export REPACK_IMG=false/Ig' kernel_platform/oplus/build/oplus_setup.sh
-        sed -i 's/ -dirty//g' kernel_platform/msm-kernel/scripts/setlocalversion
+        sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
 
     - name: Add KernelSU Next
       run: |
