@@ -137,7 +137,6 @@ jobs:
       - name: Build kernel
         run: |
           cd kernel_workspace
-          export LOCALVERSION=   # **强制 LOCALVERSION 为空**
           LTO=thin LOCALVERSION= ./kernel_platform/oplus/build/oplus_build_kernel.sh waipio gki
 
       - name: Upload Image
