@@ -204,4 +204,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Image_KernelSU_${{ github.event.inputs.kernelsu_version }}_${{ github.event.inputs.FEIL }}
-          path: kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-${{ github.event.inputs.CPUD }}-gki/dist/Image
+          path: kernel_workspace/kernel_platform/out/msm-waipio-waipio-gki/dist/Image
