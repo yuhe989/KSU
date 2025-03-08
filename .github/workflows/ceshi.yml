@@ -1,4 +1,4 @@
-name: Build OnePlus_Kernel
+name: Ceshi
 on:
   workflow_dispatch:
     inputs:
