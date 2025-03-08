@@ -200,22 +200,8 @@ jobs:
            LTO=thin ./kernel_platform/oplus/build/oplus_build_kernel.sh ${{ github.event.inputs.CPUD }} gki
          fi
          
-      - name: Make AnyKernel3
-        run: |
-          git clone https://github.com/Kernel-SU/AnyKernel3 --depth=1
-          find ./AnyKernel3 -name ".git" -type d -exec rm -rf {} +
-          cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./AnyKernel3/
-          cp kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-gki/dist/Image ./kernel_workspace/kernel
-          ls -lh ./AnyKernel3/ ./kernel_workspace/kernel
-
-      - name: Upload AnyKernel3
-        uses: actions/upload-artifact@v4
-        with:
-          name: AnyKernel3_KernelSU_${{ github.event.inputs.kernelsu_version }}_${{ github.event.inputs.FEIL }}
-          path: ./AnyKernel3/*
-
       - name: Upload Image
         uses: actions/upload-artifact@v4
         with:
           name: Image_KernelSU_${{ github.event.inputs.kernelsu_version }}_${{ github.event.inputs.FEIL }}
-          path: kernel_workspace/kernel
+          path: kernel_workspace/kernel_platform/out/msm-kernel-${{ github.event.inputs.CPUD }}-${{ github.event.inputs.CPUD }}-gki/dist/Image
