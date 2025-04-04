@@ -1,4 +1,4 @@
-name: OnePlus_Kernel
+name: Build 11r
 on:
   workflow_dispatch:
     inputs:
@@ -214,7 +214,6 @@ jobs:
           #fi
 
           
-
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
 
