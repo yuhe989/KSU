@@ -1,4 +1,4 @@
-name: Build 11r
+name: Build OnePlus_Kernel
 on:
   workflow_dispatch:
     inputs:
@@ -33,7 +33,7 @@ on:
         options:
           - SukiSU
           - SukiSU-Ultra
-        default: SukiSU-Ultra
+        default: SukiSU
       kernelsu_version:
         description: "选择 KSU 版本"
         required: true
@@ -92,6 +92,12 @@ jobs:
          mkdir kernel_workspace && cd kernel_workspace
          repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
          repo sync
+         if [  -e kernel_platform/common/BUILD.bazel ]; then
+           sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' kernel_platform/common/BUILD.bazel
+         fi
+         if [  -e kernel_platform/msm-kernel/BUILD.bazel ]; then
+         sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' kernel_platform/msm-kernel/BUILD.bazel
+         fi
          rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
          rm kernel_platform/msm-kernel/android/abi_gki_protected_exports_* || echo "No protected exports!"
          sed -i 's/ -dirty//g' kernel_platform/common/scripts/setlocalversion
@@ -133,7 +139,7 @@ jobs:
         if: ${{ github.event.inputs.SUSFS_ENABLED == 'true' }}
         run: |
           cd kernel_workspace
-          git clone https://gitlab.com/simonpunk/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
+          git clone https://gitlab.com/shirkneko/susfs4ksu.git -b gki-${{ github.event.inputs.ANDROID_VERSION }}-${{ github.event.inputs.KERNEL_VERSION }}
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           cd kernel_platform
 
@@ -156,9 +162,9 @@ jobs:
         if: ${{ github.event.inputs.SUSFS_ENABLED == 'true' }}
         run: |
           cd kernel_workspace/kernel_platform/common
-          cp ../../SukiSU_patch/69_hide_stuff.patch ./
-          echo "正在打隐藏应用补丁"
-          patch -p1 -F 3 < 69_hide_stuff.patch
+          #cp ../../SukiSU_patch/69_hide_stuff.patch ./
+          #echo "正在打隐藏应用补丁"
+          #patch -p1 -F 3 < 69_hide_stuff.patch
          
       - name: Apply New Hooks Patches
         if: ${{ github.event.inputs.VFS_patch_ENABLED == 'enable' }}
